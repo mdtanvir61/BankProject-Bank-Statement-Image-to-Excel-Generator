@@ -3,254 +3,180 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bank Statement Image to Excel Converter</title>
+    <title>Bank Statement OCR</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .drop-zone {
+            border: 2px dashed #cbd5e1;
+            transition: all 0.3s ease;
+        }
+        .drop-zone.dragover {
+            border-color: #3b82f6;
+            background-color: #eff6ff;
+        }
+    </style>
 </head>
-<body class="bg-gray-50">
-    <!-- Header Section -->
-    <header class="bg-white shadow-sm">
-        <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16">
-                <div class="flex">
-                    <div class="flex-shrink-0 flex items-center">
-                        <h1 class="text-2xl font-bold text-gray-900">Bank Statement Image to Excel Converter</h1>
-                    </div>
-                </div>
-                <div class="flex items-center">
-                    <a href="#" class="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">Home</a>
-                    <a href="#features" class="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">Features</a>
-                    <a href="#about" class="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">About</a>
-                </div>
+<body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <div class="max-w-2xl mx-auto">
+            <!-- Header -->
+            <div class="text-center mb-8">
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">Bank Statement OCR</h1>
+                <p class="text-gray-600">Convert your bank statements to Excel with ease</p>
             </div>
-        </nav>
-    </header>
 
-    <!-- Main Content -->
-    <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <!-- Upload Section -->
-        <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
-            <div class="max-w-xl mx-auto text-center">
-                <h2 class="text-3xl font-bold text-gray-900 mb-4">Convert Your Bank Statement</h2>
-                <p class="text-gray-600 mb-8">Upload your bank statement image and we'll convert it to a clean, organized Excel file</p>
-                
-                <div id="drop-zone" class="border-2 border-dashed border-gray-300 rounded-lg p-12 transition-all hover:border-blue-500">
-                    <input type="file" id="file-input" class="hidden" accept="image/*">
-                    <div class="text-center">
-                        <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-4"></i>
-                        <p class="text-gray-600">Drag and drop your file here or</p>
-                        <button onclick="document.getElementById('file-input').click()" class="mt-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            Browse Files
-                        </button>
+            <!-- Upload Section -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div id="drop-zone" class="drop-zone rounded-lg p-8 text-center cursor-pointer mb-4">
+                    <div class="space-y-4">
+                        <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                            <path d="M24 8l12 12m-12-12l-12 12m12-12v24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <div class="text-gray-600">
+                            <span class="font-medium">Click to upload</span> or drag and drop
+                        </div>
+                        <p class="text-sm text-gray-500">PNG, JPG, JPEG, TIFF, BMP up to 16MB</p>
+                    </div>
+                    <input type="file" id="file-input" class="hidden" accept=".png,.jpg,.jpeg,.tiff,.bmp">
+                </div>
+
+                <!-- Processing Status -->
+                <div id="status" class="hidden">
+                    <div class="flex items-center justify-center space-x-3">
+                        <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
+                        <span class="text-gray-600">Processing your statement...</span>
                     </div>
                 </div>
 
-                <div id="preview-section" class="hidden mt-8">
-                    <h3 class="text-xl font-semibold mb-4">Extracted Information</h3>
-                    
-                    <!-- Account Info Section -->
-                    <div class="bg-gray-50 rounded-lg p-4 mb-4">
-                        <h4 class="font-semibold text-gray-700 mb-2">Account Information</h4>
-                        <div id="account-info" class="grid grid-cols-2 gap-4">
-                            <!-- Will be populated by JavaScript -->
-                        </div>
-                    </div>
+                <!-- Error Message -->
+                <div id="error" class="hidden text-red-600 text-center mt-4"></div>
+            </div>
 
-                    <!-- Issue Date Section -->
-                    <div class="bg-gray-50 rounded-lg p-4 mb-4">
-                        <h4 class="font-semibold text-gray-700 mb-2">Statement Details</h4>
-                        <div id="issue-date" class="grid grid-cols-2 gap-4">
-                            <!-- Will be populated by JavaScript -->
-                        </div>
+            <!-- Features Section -->
+            <div class="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-white p-6 rounded-lg shadow-sm">
+                    <div class="text-blue-600 mb-3">
+                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                        </svg>
                     </div>
-
-                    <!-- Transactions Preview -->
-                    <div class="bg-gray-50 rounded-lg p-4">
-                        <h4 class="font-semibold text-gray-700 mb-2">Transactions</h4>
-                        <div class="overflow-x-auto">
-                            <table id="transactions-table" class="min-w-full divide-y divide-gray-200">
-                                <!-- Will be populated by JavaScript -->
-                            </table>
-                        </div>
+                    <h3 class="font-semibold text-gray-900 mb-2">Fast Processing</h3>
+                    <p class="text-gray-600 text-sm">Advanced OCR technology for quick and accurate data extraction</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-sm">
+                    <div class="text-blue-600 mb-3">
+                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
                     </div>
-
-                    <button id="convert-button" class="mt-6 px-6 py-3 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500">
-                        Convert to Excel
-                    </button>
+                    <h3 class="font-semibold text-gray-900 mb-2">High Accuracy</h3>
+                    <p class="text-gray-600 text-sm">Enhanced image processing for better extraction accuracy</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-sm">
+                    <div class="text-blue-600 mb-3">
+                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                        </svg>
+                    </div>
+                    <h3 class="font-semibold text-gray-900 mb-2">Secure Processing</h3>
+                    <p class="text-gray-600 text-sm">Your data is processed securely and never stored</p>
                 </div>
             </div>
         </div>
-
-        <!-- Features Section -->
-        <div id="features" class="bg-blue-50 rounded-lg shadow-sm p-8 mb-6">
-            <h2 class="text-2xl font-bold text-center text-gray-900 mb-8">Why Choose Our Converter?</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="text-center p-4">
-                    <i class="fas fa-bolt text-3xl text-blue-600 mb-4"></i>
-                    <h3 class="text-xl font-semibold mb-2">Fast Processing</h3>
-                    <p class="text-gray-600">Convert your bank statements to Excel in seconds</p>
-                </div>
-                <div class="text-center p-4">
-                    <i class="fas fa-lock text-3xl text-blue-600 mb-4"></i>
-                    <h3 class="text-xl font-semibold mb-2">Secure & Private</h3>
-                    <p class="text-gray-600">Your data is processed locally and never stored</p>
-                </div>
-                <div class="text-center p-4">
-                    <i class="fas fa-check-circle text-3xl text-blue-600 mb-4"></i>
-                    <h3 class="text-xl font-semibold mb-2">Accurate Results</h3>
-                    <p class="text-gray-600">Advanced OCR technology ensures high accuracy</p>
-                </div>
-            </div>
-        </div>
-    </main>
-
-    <!-- Footer -->
-    <footer class="bg-gray-800 text-white">
-        <div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-            <div class="text-center">
-                <h2 class="text-2xl font-bold mb-2">Bank Statement Image to Excel Converter</h2>
-                <p class="text-gray-400">&copy; 2024 All rights reserved.</p>
-            </div>
-        </div>
-    </footer>
+    </div>
 
     <script>
-        // Drag and drop functionality
         const dropZone = document.getElementById('drop-zone');
         const fileInput = document.getElementById('file-input');
-        const previewSection = document.getElementById('preview-section');
-        const convertButton = document.getElementById('convert-button');
+        const status = document.getElementById('status');
+        const error = document.getElementById('error');
 
-        dropZone.addEventListener('dragover', (e) => {
+        // Handle drag and drop events
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
             e.preventDefault();
-            dropZone.classList.add('border-blue-500');
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, highlight, false);
         });
 
-        dropZone.addEventListener('dragleave', () => {
-            dropZone.classList.remove('border-blue-500');
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, unhighlight, false);
         });
 
-        dropZone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            dropZone.classList.remove('border-blue-500');
-            const file = e.dataTransfer.files[0];
-            handleFile(file);
-        });
+        function highlight(e) {
+            dropZone.classList.add('dragover');
+        }
 
-        fileInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            handleFile(file);
-        });
+        function unhighlight(e) {
+            dropZone.classList.remove('dragover');
+        }
 
-        function handleFile(file) {
-            if (!file || !file.type.startsWith('image/')) {
-                alert('Please upload an image file');
-                return;
+        dropZone.addEventListener('drop', handleDrop, false);
+        dropZone.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', handleFileSelect);
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            handleFiles(files);
+        }
+
+        function handleFileSelect(e) {
+            const files = e.target.files;
+            handleFiles(files);
+        }
+
+        function handleFiles(files) {
+            if (files.length > 0) {
+                const file = files[0];
+                uploadFile(file);
             }
+        }
+
+        async function uploadFile(file) {
+            // Show status and hide error
+            status.classList.remove('hidden');
+            error.classList.add('hidden');
 
             const formData = new FormData();
             formData.append('file', file);
 
-            // Show loading state
-            dropZone.innerHTML = '<div class="text-center"><i class="fas fa-spinner fa-spin text-4xl text-gray-400 mb-4"></i><p class="text-gray-600">Processing...</p></div>';
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
 
-            fetch('/upload', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                // Show preview section
-                previewSection.classList.remove('hidden');
-                
-                // Update account info
-                const accountInfo = document.getElementById('account-info');
-                accountInfo.innerHTML = `
-                    <div><span class="font-medium">Bank Name:</span> ${data.account_info.bank_name}</div>
-                    <div><span class="font-medium">Account Name:</span> ${data.account_info.account_name}</div>
-                    <div><span class="font-medium">Account Number:</span> ${data.account_info.account_number}</div>
-                `;
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Upload failed');
+                }
 
-                // Update issue date
-                const issueDate = document.getElementById('issue-date');
-                issueDate.innerHTML = `
-                    <div><span class="font-medium">Statement Date:</span> ${data.issue_date}</div>
-                `;
-
-                // Update transactions table
-                const transactionsTable = document.getElementById('transactions-table');
-                transactionsTable.innerHTML = `
-                    <thead class="bg-gray-100">
-                        <tr>
-                            <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">Date</th>
-                            <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">Description</th>
-                            <th class="px-4 py-2 text-right text-sm font-medium text-gray-700">Withdraw</th>
-                            <th class="px-4 py-2 text-right text-sm font-medium text-gray-700">Deposit</th>
-                            <th class="px-4 py-2 text-right text-sm font-medium text-gray-700">Balance</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-200">
-                        ${data.transactions.map(t => `
-                            <tr>
-                                <td class="px-4 py-2 text-sm text-gray-900">${t.date}</td>
-                                <td class="px-4 py-2 text-sm text-gray-900">${t.description}</td>
-                                <td class="px-4 py-2 text-sm text-gray-900 text-right">${t.withdraw}</td>
-                                <td class="px-4 py-2 text-sm text-gray-900 text-right">${t.deposit}</td>
-                                <td class="px-4 py-2 text-sm text-gray-900 text-right">${t.balance}</td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                `;
-
-                // Reset upload zone
-                dropZone.innerHTML = `
-                    <div class="text-center">
-                        <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-4"></i>
-                        <p class="text-gray-600">Drag and drop your file here or</p>
-                        <button onclick="document.getElementById('file-input').click()" class="mt-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            Browse Files
-                        </button>
-                    </div>
-                `;
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('An error occurred while processing the file');
-                
-                // Reset upload zone
-                dropZone.innerHTML = `
-                    <div class="text-center">
-                        <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-4"></i>
-                        <p class="text-gray-600">Drag and drop your file here or</p>
-                        <button onclick="document.getElementById('file-input').click()" class="mt-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            Browse Files
-                        </button>
-                    </div>
-                `;
-            });
-        }
-
-        // Handle convert button click
-        convertButton.addEventListener('click', () => {
-            fetch('/convert', {
-                method: 'POST'
-            })
-            .then(response => response.blob())
-            .then(blob => {
-                const url = window.URL.createObjectURL(blob);
+                // Handle successful response
+                const blob = await response.blob();
+                const downloadUrl = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
-                a.href = url;
-                a.download = 'bank_statement.xlsx';
+                a.href = downloadUrl;
+                a.download = file.name.replace(/\.[^/.]+$/, '') + '.xlsx';
                 document.body.appendChild(a);
                 a.click();
-                window.URL.revokeObjectURL(url);
-                a.remove();
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('An error occurred while converting to Excel');
-            });
-        });
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(downloadUrl);
+
+            } catch (err) {
+                error.textContent = err.message;
+                error.classList.remove('hidden');
+            } finally {
+                status.classList.add('hidden');
+                fileInput.value = ''; // Reset file input
+            }
+        }
     </script>
 </body>
 </html>
